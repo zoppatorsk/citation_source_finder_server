@@ -8,7 +8,7 @@ module.exports = function (err, req, res, next) {
 	if (err instanceof SyntaxError) return res.status(400).send('Invalid JSON');
 
 	//If we get an error from express that is not expected then will log it
-	console.error(err.stack ? err.stack : err);
+	console.error('by express error handler', err.stack ? err.stack : err);
 	logger(err);
 	return res.status(500).send('Internal server error');
 };
