@@ -1,4 +1,8 @@
 .env
 node_modules/
 *.log
+t.js
+t.json
+t.txt
+citations.txt
 ```

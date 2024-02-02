@@ -3,20 +3,21 @@ require('express-async-errors'); //Patches async routes so don't have to put try
 //const path = require('path');
 const express = require('express');
 const compression = require('compression');
+const expressErrorHandler = require('./middleware/expressErrorHandler');
 const cors = require('cors');
 const app = express();
 
-app.set('query parser', false); //No query parser needed
-//if (process.env.USE_PROXY == 'true') app.set('trust proxy', true); //if USE_PROXY is set, then trust proxy headers
+app.set('query parser', 'simple'); //use the simple query string parser
 
-const data = require('./routes/data');
 app.use(compression()); //use compression to compress responses
 app.use(cors()); //add cors to allow cross-origin requests
 app.use(express.json()); //for parsing req.body into a json object
 
+const data = require('./routes/data'); //require the routes
 //register the routes
-app.use('/', data); //when starts with /api/data then use the "data" route that is required from routes/user folder
-//app.use(express.static(path.join(__dirname, 'public'))); //serve static files from the public folder so can run frontend on the same server
+app.use('/', data); //when starts with / then use the "data" route that is required from routes/user folder
+
+app.use(expressErrorHandler); //Error handler middleware. Always shld be last cuz errors boubble up.
 
 const port = process.env.API_PORT;
 const listen = process.env.LISTEN;
