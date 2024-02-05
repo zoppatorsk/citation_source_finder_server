@@ -1,6 +1,6 @@
 const axios = require('axios');
-const { errors } = require('../modules/constants');
-const urls = require('../modules/constants/urls');
+const errors = require('../modules/constants/errors');
+const { SUMMON_URL } = require('../modules/constants/urls');
 
 async function summon(citationObj) {
 	const queryParams = {
@@ -15,9 +15,8 @@ async function summon(citationObj) {
 		q: `(${citationObj.title}) AND (AuthorCombined:(${citationObj.author}))`,
 	};
 
-	const searchUrl = urls.summon;
 	try {
-		const response = await axios.get(searchUrl, {
+		const response = await axios.get(SUMMON_URL, {
 			params: queryParams,
 		});
 		//later add some more checks, for now this is good enough

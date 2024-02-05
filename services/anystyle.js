@@ -1,17 +1,9 @@
-// @ts-check
 const axios = require('axios');
-const typedefs = require('../typedefs');
-const { errors } = require('../modules/constants');
+const errors = require('../modules/constants/errors');
 
-/**
- * Parses a citation using the Anystyle API.
- * @param {string} citation - The citation to parse.
- * @returns {Promise<{ data: typedefs.CitationObj | string, ok: boolean }>} The parsed citation object and a boolean indicating if the parsing was successful.
- */
 async function parse(citation) {
 	const anystyleUrl = `${process.env.ANYSTYLE_URL}/api/v1/parse?text=${encodeURIComponent(citation)}`;
 	try {
-		// @ts-ignore
 		const res = await axios.get(anystyleUrl);
 
 		//if data is not array or if length is 0 we can't do anything with it, ie the parser did not return any data
@@ -20,7 +12,6 @@ async function parse(citation) {
 		// ! for debugging
 		console.dir(data);
 
-		/** @type typedefs.CitationObj */
 		const citationObj = parseIntoObject(data);
 		// ! for debugging
 		console.dir(citationObj);
@@ -32,20 +23,12 @@ async function parse(citation) {
 	}
 }
 
-/**
- * Parse data and citation string into an object with the extracted data.
- *
- * @param {object} item - The object from anystyle parser.
- * @returns {typedefs.CitationObj}  An object containing the citation data.
- */
-
 function parseIntoObject(item) {
 	const title = extractTitle(item);
 	const author = extractAuthor(item);
 	const published = extractPublishedDate(item);
 	const type = item?.type ?? ''; //maybe we can use this one later when doing advanced search but for now just ignore it (need to check what different types are available)
 
-	/** @type typedefs.CitationObj */
 	const citationObj = {
 		title: title,
 		author: author,
