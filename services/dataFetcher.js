@@ -1,9 +1,9 @@
 const axios = require('axios');
+const logError = require('./logger');
 const { XMLParser } = require('fast-xml-parser');
 const errors = require('../modules/constants/errors');
 const { SUMMON_URL, DIVA_URL } = require('../modules/constants/urls');
 
-// !refactor later to only use one axios with try catch
 async function summon(citationObj) {
 	const queryParams = {
 		screen_res: 'W1920H955',
@@ -17,19 +17,12 @@ async function summon(citationObj) {
 		q: `(${citationObj.title}) AND (AuthorCombined:(${citationObj.author}))`,
 	};
 
-	try {
-		const response = await axios.get(SUMMON_URL, {
-			params: queryParams,
-		});
-		//later add some more checks, for now this is good enough
-		const href = response?.data?.documents?.[0]?.fulltext_link; //link if exists
-
-		if (!href) return { ok: false, message: errors.NOT_FOUND };
-		return { ok: true, href: href };
-	} catch (error) {
-		console.error(error);
-		return { ok: false, message: errors.DATABASE_ERROR };
-	}
+	const response = await fetchData(SUMMON_URL, queryParams);
+	if (response?.ok === false) return response;
+	//later add some more checks, for now this is good enough
+	const href = response?.data?.documents?.[0]?.fulltext_link; //link if exists
+	if (!href) return { ok: false, message: errors.NOT_FOUND };
+	return { ok: true, href: href };
 }
 
 async function diva(citationObj) {
@@ -37,7 +30,7 @@ async function diva(citationObj) {
 		format: 'mods',
 		addFilename: true,
 		aq: `[[{"person":["${citationObj.author}"]},{"titleAll":"${citationObj.title}"}],[]]`,
-		aqe: [],
+		aqe: '[]',
 		aq2: `[[{"dateIssued":{"from":"${citationObj.published}","to":"${citationObj.published}"}},{"publicationTypeCode":["bookReview","dissertation","review","comprehensiveDoctoralThesis","article","monographDoctoralThesis","artisticOutput","comprehensiveLicentiateThesis","book","monographLicentiateThesis","chapter","manuscript","collection","other","conferencePaper","patent","conferenceProceedings","report","dataset","studentThesis"]}]]`,
 		onlyFullText: true,
 		noOfRows: 1,
@@ -45,18 +38,25 @@ async function diva(citationObj) {
 		sortOrder2: 'title_sort_asc',
 	};
 
+	const response = await fetchData(DIVA_URL, queryParams);
+	if (response?.ok === false) return response;
+	//get data as XML as other good options lack the direct fulltext link
+	const parser = new XMLParser();
+	const jsonObj = response.data ? parser.parse(response.data) : null;
+	let href = jsonObj?.modsCollection?.mods?.location?.url ?? '';
+	if (!href) return { ok: false, message: errors.NOT_FOUND };
+	return { ok: true, href: href };
+}
+
+async function fetchData(url, queryParams) {
 	try {
-		const response = await axios.get(DIVA_URL, {
+		const response = await axios.get(url, {
 			params: queryParams,
 		});
-		const parser = new XMLParser();
-		const jsonObj = parser.parse(response.data);
-		let href = jsonObj?.modsCollection?.mods?.location?.url ?? '';
-		if (!href) return { ok: false, message: errors.NOT_FOUND };
-		return { ok: true, href: href };
+		return response?.data;
 	} catch (error) {
-		console.error(error);
-		return { ok: false, message: errors.DATABASE_ERROR };
+		logError(error);
+		return { ok: false, message: errors.DATABASE_ERROR }; //change this error to better name later
 	}
 }
 

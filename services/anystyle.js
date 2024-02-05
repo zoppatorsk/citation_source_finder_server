@@ -1,4 +1,5 @@
 const axios = require('axios');
+const logError = require('../services/logger');
 const errors = require('../modules/constants/errors');
 const fileWriter = require('../modules/fileWriter');
 
@@ -19,7 +20,7 @@ async function parse(citation) {
 		if (!citationObjIsValid(citationObj)) return { data: errors.PARSING_API_DATA_FAILED, ok: false };
 		return { data: citationObj, ok: true };
 	} catch (error) {
-		console.error(error);
+		logError(error);
 		return { data: errors.PARSING_API_FAILED, ok: false }; //anystyle returned an error for some reason
 	}
 }
