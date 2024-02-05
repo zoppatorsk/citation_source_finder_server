@@ -3,6 +3,7 @@ const { XMLParser } = require('fast-xml-parser');
 const errors = require('../modules/constants/errors');
 const { SUMMON_URL, DIVA_URL } = require('../modules/constants/urls');
 
+// !refactor later to only use one axios with try catch
 async function summon(citationObj) {
 	const queryParams = {
 		screen_res: 'W1920H955',
