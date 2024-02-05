@@ -1,6 +1,7 @@
 const axios = require('axios');
+const { XMLParser } = require('fast-xml-parser');
 const errors = require('../modules/constants/errors');
-const { SUMMON_URL } = require('../modules/constants/urls');
+const { SUMMON_URL, DIVA_URL } = require('../modules/constants/urls');
 
 async function summon(citationObj) {
 	const queryParams = {
@@ -29,8 +30,38 @@ async function summon(citationObj) {
 		return { ok: false, message: errors.DATABASE_ERROR };
 	}
 }
+
+async function diva(citationObj) {
+	const queryParams = {
+		format: 'mods',
+		addFilename: true,
+		aq: `[[{"person":["${citationObj.author}"]},{"titleAll":"${citationObj.title}"}],[]]`,
+		aqe: [],
+		aq2: `[[{"dateIssued":{"from":"${citationObj.published}","to":"${citationObj.published}"}},{"publicationTypeCode":["bookReview","dissertation","review","comprehensiveDoctoralThesis","article","monographDoctoralThesis","artisticOutput","comprehensiveLicentiateThesis","book","monographLicentiateThesis","chapter","manuscript","collection","other","conferencePaper","patent","conferenceProceedings","report","dataset","studentThesis"]}]]`,
+		onlyFullText: true,
+		noOfRows: 1,
+		sortOrder: 'relevance_sort_desc',
+		sortOrder2: 'title_sort_asc',
+	};
+
+	try {
+		const response = await axios.get(DIVA_URL, {
+			params: queryParams,
+		});
+		const parser = new XMLParser();
+		const jsonObj = parser.parse(response.data);
+		let href = jsonObj?.modsCollection?.mods?.location?.url ?? '';
+		if (!href) return { ok: false, message: errors.NOT_FOUND };
+		return { ok: true, href: href };
+	} catch (error) {
+		console.error(error);
+		return { ok: false, message: errors.DATABASE_ERROR };
+	}
+}
+
 const dataFetcher = {
 	summon,
+	diva,
 };
 
 module.exports = dataFetcher;

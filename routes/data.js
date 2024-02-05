@@ -14,7 +14,8 @@ router.get('/', async (req, res) => {
 	//now should be ready to do the search in summon/other databases
 	//run dataFetcher for the different databases
 
-	const providerResults = await dataFetcher.summon(result.data);
+	//const providerResults = await dataFetcher.summon(result.data);
+	const providerResults = await dataFetcher.diva(result.data);
 	return res.status(200).send(providerResults);
 	//return res.status(200).send(req.query);
 });

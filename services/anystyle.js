@@ -1,20 +1,21 @@
 const axios = require('axios');
 const errors = require('../modules/constants/errors');
+const fileWriter = require('../modules/fileWriter');
 
 async function parse(citation) {
 	const anystyleUrl = `${process.env.ANYSTYLE_URL}/api/v1/parse?text=${encodeURIComponent(citation)}`;
 	try {
 		const res = await axios.get(anystyleUrl);
+		//for now lets save the result to a file so we can check how well tbe parser works
 
 		//if data is not array or if length is 0 we can't do anything with it, ie the parser did not return any data
 		if (!Array.isArray(res.data) || res.data.length == 0) return { data: errors.PARSING_FAILED, ok: false };
 		const data = res.data[0];
-		// ! for debugging
-		console.dir(data);
 
+		// ! save the result to a file so we can check how well the anystyle parser works
+		await fileWriter(data, citation);
 		const citationObj = parseIntoObject(data);
-		// ! for debugging
-		console.dir(citationObj);
+
 		if (!citationObjIsValid(citationObj)) return { data: errors.PARSING_API_DATA_FAILED, ok: false };
 		return { data: citationObj, ok: true };
 	} catch (error) {

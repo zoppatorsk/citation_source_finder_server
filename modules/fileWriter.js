@@ -8,7 +8,6 @@ async function fileWriter(jsonObject, citation) {
 	// Add the citation to the object
 
 	jsonObject.citation = citation;
-	console.log('c', jsonObject.citation);
 	const jsonString = JSON.stringify(jsonObject, null, 2); // The third argument (2) is for indentation
 
 	try {
