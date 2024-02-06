@@ -25,10 +25,10 @@ async function summon(citationObj) {
 	if (response.ok === false) return { ok: false, message: response.message, provider: 'summon' };
 	//later add some more checks, for now this is good enough
 	const href = response?.data?.documents?.[0]?.fulltext_link; //link if exists
+	const authors = response?.data?.documents?.[0].authors ?? [];
+	// ! keep an eye on this check
+	if (!href || !isAuthorInArry(citationObj.author, authors)) return { ok: false, message: errors.NOT_FOUND, provider: 'summon' };
 
-	// ! chech this array later for author match
-	//const authors = response?.data?.documents?.[0].authors;
-	if (!href) return { ok: false, message: errors.NOT_FOUN, provider: 'summon' };
 	return { ok: true, href: href, provider: 'summon' };
 }
 
@@ -68,6 +68,18 @@ async function fetchData(url, queryParams) {
 		logError(error);
 		return { ok: false, message: errors.DATABASE_ERROR }; //change this error to better name later
 	}
+}
+
+function isAuthorInArry(author, authors) {
+	const authorLower = author.toLowerCase();
+
+	for (const authorObj of authors) {
+		for (const key in authorObj) {
+			const valueLower = authorObj[key].toLowerCase();
+			if (valueLower === authorLower) return true;
+		}
+	}
+	return false; // Author not found
 }
 
 const dataFetcher = {
