@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
 	if (!req.query.q) return res.status(400).send('No query provided');
 	const citation = req.query.q;
 	if (!req.query.db) return res.status(400).send('No database provided');
-	dbs = req.query.db.split(',');
+	const dbs = req.query.db.split(',');
 	dbs.forEach((element) => {
 		element = element.trim().toLowerCase();
 		//delete element if it is not a valid db
@@ -21,15 +21,24 @@ router.get('/', async (req, res) => {
 	console.log(dbs);
 
 	const result = await anystyle.parse(citation);
-	if (!result.ok) return res.status(200).send({ ok: false, message: result.data });
+	if (!result.ok) return res.status(200).send([{ ok: false, message: result.data, provider: 'all' }]);
 
 	//now should be ready to do the search in summon/other databases
 	//run dataFetcher for the different databases
 
 	// ! need to come up with a way to handle multiple dbs.. send back some array i guess
 	// ! will need to do that for all other stuff too
-	const providerResults = await dataFetcher.diva(result.data);
-	return res.status(200).send(providerResults);
+
+	//	let providers = ['diva', 'summon'];
+	const promises = dbs.map((provider) => dataFetcher[provider](result.data));
+	const providerResults = await Promise.all(promises);
+	const resultsObj = {};
+	providerResults.forEach((element) => {
+		resultsObj[element.provider] = element;
+	});
+	//const providerResults = await dataFetcher[test[0]](result.data);
+	return res.status(200).send(resultsObj);
+	// ! rememrber to add fix the frontend to handle new object
 	//return res.status(200).send(req.query);
 });
 //end router.get
