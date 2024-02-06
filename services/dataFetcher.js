@@ -27,7 +27,7 @@ async function summon(citationObj) {
 	const href = response?.data?.documents?.[0]?.fulltext_link; //link if exists
 	const authors = response?.data?.documents?.[0].authors ?? [];
 	// ! keep an eye on this check
-	if (!href || !isAuthorInArry(citationObj.author, authors)) return { ok: false, message: errors.NOT_FOUND, provider: 'summon' };
+	if (!href) return { ok: false, message: errors.NOT_FOUND, provider: 'summon' };
 
 	return { ok: true, href: href, provider: 'summon' };
 }
@@ -63,6 +63,7 @@ async function fetchData(url, queryParams) {
 		const response = await axios.get(url, {
 			params: queryParams,
 		});
+		console.log(response.data);
 		return { ok: true, data: response.data };
 	} catch (error) {
 		logError(error);
@@ -70,6 +71,7 @@ async function fetchData(url, queryParams) {
 	}
 }
 
+// ! this function does not work, need to fix it later
 function isAuthorInArry(author, authors) {
 	const authorLower = author.toLowerCase();
 

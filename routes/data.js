@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 	console.log(dbs);
 
 	const result = await anystyle.parse(citation);
-	if (!result.ok) return res.status(200).send([{ ok: false, message: result.data, provider: 'all' }]);
+	if (!result.ok) return res.status(200).send({ anystyle: { ok: false, message: result.data, provider: 'anystyle' } });
 
 	//now should be ready to do the search in summon/other databases
 	//run dataFetcher for the different databases
