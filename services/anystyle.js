@@ -13,7 +13,6 @@ async function parse(citation) {
 		if (!Array.isArray(res.data) || res.data.length == 0) return { data: errors.PARSING_FAILED, ok: false };
 		const data = res.data[0];
 
-		// ! save the result to a file so we can check how well the anystyle parser works
 		await fileWriter(data, citation);
 		const citationObj = parseIntoObject(data);
 
@@ -26,6 +25,7 @@ async function parse(citation) {
 }
 
 function parseIntoObject(item) {
+	//!! sometime there is an editor instead of author, we should probably handle that as well
 	const title = extractTitle(item);
 	const author = extractAuthor(item);
 	const published = extractPublishedDate(item);

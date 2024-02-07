@@ -20,5 +20,4 @@ app.use('/', data); //when starts with / then use the "data" route that is requi
 app.use(expressErrorHandler); //Error handler middleware. Always shld be last cuz errors boubble up.
 
 const port = process.env.API_PORT;
-const listen = process.env.LISTEN;
-app.listen(port, `${listen}`, () => console.log(`${listen} listening on port ${port}`));
+app.listen(port, `${listen}`, () => console.log(`listening on port ${port}`));
